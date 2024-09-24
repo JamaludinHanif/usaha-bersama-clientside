@@ -5,8 +5,8 @@ import { useState } from "react";
 import { Button, Checkbox, Form, Input, Spin, message } from "antd";
 import { useNavigate, Link } from "react-router-dom";
 import { API } from "../../config/api";
-import { LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
+import { LoadingOutlined } from "@ant-design/icons";
 
 const antIcon = (
   <LoadingOutlined
@@ -19,41 +19,57 @@ const antIcon = (
 );
 
 const onFinish = (values) => {
-  console.log("Success:", values);
+  // console.log("Success:", values);
 };
 const onFinishFailed = (errorInfo) => {
-  console.log("Failed:", errorInfo);
+  // console.log("Failed:", errorInfo);
 };
 
 const Login = () => {
-
   // antd
   const [messageApi, contextHolder] = message.useMessage();
 
-    // router
-    const navigate = useNavigate();
+  // router
+  const navigate = useNavigate();
 
-    //state
-    const [Username, setUsername] = useState();
-    const [Password, setPassword] = useState();
-    const [Loading, setLoading] = useState(false);
+  //state
+  const [Username, setUsername] = useState();
+  const [Password, setPassword] = useState();
+  const [Loading, setLoading] = useState(false);
 
   const login = async () => {
-      let body = {
-        username: Username,
-        password: `${Password}`,
-      };
-      setLoading(true);
-      await axios
-        .post(`${API.BASE_URL}/api/v1/auth/login`, body)
-        .then((response) => {
-          console.log(response)
-        })
-        .catch((err) => {
-          message.error('login gagal')
-          console.error("Terjadi Kesalahan: ", err);
-        });
-      setLoading(false);
+    let body = {
+      username: Username,
+      password: `${Password}`,
+    };
+    console.log("ini body", body);
+    setLoading(true);
+    await axios
+      .post(`${API.Ngrok_URL}/auth/login`, body, {
+        headers: {
+          "bypass-tunnel-reminder": "true",
+        },
+      })
+      .then((response) => {
+        if (response?.data?.status == true) {
+          navigate(`/home`);
+          sessionStorage.setItem(
+            "@userData",
+            JSON.stringify(response?.data?.data)
+          );
+          sessionStorage.setItem("@isLoggedIn", "true");
+          message.success("login berhasil");
+          console.log(response?.data);
+        } else {
+          message.error("login gagal");
+          console.log(response?.data);
+        }
+      })
+      .catch((err) => {
+        message.error("login gagal");
+        console.error("Terjadi Kesalahan: ", err);
+      });
+    setLoading(false);
   };
 
   return (
@@ -66,7 +82,7 @@ const Login = () => {
                 <img
                   class="h-10 w-auto"
                   src="./src/img/dudul.jpg"
-                  alt="Your Company"
+                  alt="Udin Company"
                 />
                 <h2 class="mt-8 text-2xl font-bold leading-9 tracking-tight text-gray-900">
                   Log in ke akun mu
@@ -74,7 +90,7 @@ const Login = () => {
                 <p class="mt-2 text-sm leading-6 text-gray-500">
                   Belum punya akun ?
                   <a
-                    href="./src/pages/daftar.php"
+                    href="https://wa.me/6285161310017?text=daftarin%20saya%20dong%20minn%20"
                     class="font-semibold text-indigo-600 hover:text-indigo-500"
                   >
                     Daftar sekarang

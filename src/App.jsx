@@ -9,14 +9,24 @@ import NotFound from "./pages/404page";
 import loginImg from "../public/logImg.png";
 import Dashboard from "./pages/dashboard/Dashboard";
 import ProtectedRoute from "./pages/authentication/ProtectedRoute";
-import SelectProducts from "./pages/kasir/SelectProducts";
 import MainLayout from "./components/layout/MainLayout";
-import Kalender from "./pages/kalender/Kalender";
+import Tes from "./pages/Tes";
+import IndexUser from "./pages/forUser/indexUser/IndexUser";
+import Profile from "./pages/forUser/profile/Profile";
+import IndexCashier from "./pages/forCashier/index/IndexCashier";
+import SelectProducts from "./pages/forCashier/Payment/SelectProducts";
+import Precheckout from "./pages/forCashier/Payment/Precheckout";
+import Cart from "./pages/forUser/Cart/Cart";
 
 const protectedRoutes = [
   { path: "/dashboard", element: <Dashboard /> },
-  { path: "/select-product", element: <SelectProducts /> },
-  { path: "/kalender", element: <Kalender />}
+  { path: "/pilih-barang", element: <SelectProducts /> },
+  { path: "/precheckout", element: <Precheckout /> },
+  { path: "/tes", element: <Tes />},
+  { path: "/home", element: <IndexUser />},
+  { path: "/profile", element: <Profile />},
+  { path: "/cashier", element: <IndexCashier />},
+  { path: "/cart", element: <Cart />},
 ];
 
 function App() {

@@ -1,0 +1,29 @@
+.breadcrumbs {
+    display: flex;
+    list-style: none;
+  }
+  
+  .breadcrumbs li {
+    margin-right: 10px;
+  }
+  
+  .breadcrumbs li::after {
+    content: '/';
+    margin-left: 10px;
+  }
+  
+  .breadcrumbs li:last-child::after {
+    content: '';
+  }
+  
+  .breadcrumbs li a {
+    text-decoration: none;
+    color: #007bff;
+  }
+
+  .active {
+    font-weight: bold;
+    color: #007bff;
+  }
+  
+  

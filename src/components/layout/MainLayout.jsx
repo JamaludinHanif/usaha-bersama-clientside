@@ -1,20 +1,4 @@
-/*
-  This example requires some changes to your config:
-  
-  ```
-  // tailwind.config.js
-  module.exports = {
-    // ...
-    plugins: [
-      // ...
-      require('@tailwindcss/forms'),
-    ],
-  }
-  ```
-*/
-'use client'
-
-import { useState } from 'react'
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogBackdrop,
@@ -24,7 +8,7 @@ import {
   MenuItem,
   MenuItems,
   TransitionChild,
-} from '@headlessui/react'
+} from "@headlessui/react";
 import {
   Bars3Icon,
   BellIcon,
@@ -36,46 +20,184 @@ import {
   HomeIcon,
   UsersIcon,
   XMarkIcon,
-} from '@heroicons/react/24/outline'
-import { ChevronDownIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid'
-
-const navigation = [
-  { name: 'Dashboard', href: '#', icon: HomeIcon, current: true },
-  { name: 'Team', href: '#', icon: UsersIcon, current: false },
-  { name: 'Projects', href: '#', icon: FolderIcon, current: false },
-  { name: 'Calendar', href: '#', icon: CalendarIcon, current: false },
-  { name: 'Documents', href: '#', icon: DocumentDuplicateIcon, current: false },
-  { name: 'Reports', href: '#', icon: ChartPieIcon, current: false },
-]
-const teams = [
-  { id: 1, name: 'Heroicons', href: '#', initial: 'H', current: false },
-  { id: 2, name: 'Tailwind Labs', href: '#', initial: 'T', current: false },
-  { id: 3, name: 'Workcation', href: '#', initial: 'W', current: false },
-]
-const userNavigation = [
-  { name: 'Your profile', href: '#' },
-  { name: 'Sign out', href: '#' },
-]
+} from "@heroicons/react/24/outline";
+import { AiOutlineShoppingCart } from "react-icons/ai";
+import {
+  ChevronDownIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/20/solid";
+import { API } from "../../config/api";
+import Logout from "../Logout";
+import { FaCashRegister } from "react-icons/fa";
+import { FaSquareInstagram } from "react-icons/fa6";
+import { FaGithub, FaWhatsapp } from "react-icons/fa";
+import { MdLogout } from "react-icons/md";
+import { Link } from "react-router-dom";
+import { Badge } from "antd";
+import axios from "axios";
 
 function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
+  return classes.filter(Boolean).join(" ");
 }
 
 export default function MainLayout({ children }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // session storage manage
+  const sessionUserData = sessionStorage.getItem("@userData");
+  const userData = JSON.parse(sessionUserData);
+
+  // State
+  const [currentPage, setCurrentPage] = useState("Home");
+  const [JumlahCart, setJumlahCart] = useState(0);
+  const [IsLoading, setIsLoading] = useState(false);
+
+  // Data navigasi dan cashier
+  const navigation = [
+    {
+      name: "Home",
+      href: "/home",
+      icon: HomeIcon,
+      current: currentPage === "Home",
+    },
+    {
+      name: "Keranjang",
+      href: "/cart",
+      icon: AiOutlineShoppingCart,
+      current: currentPage === "Keranjang",
+    },
+    {
+      name: "Profil",
+      href: "/profile",
+      icon: UsersIcon,
+      current: currentPage === "Profil",
+    },
+  ];
+  const cashier = [
+    {
+      name: "Cashier",
+      href: "/cashier",
+      icon: FaCashRegister,
+      current: currentPage === "Cashier",
+    },
+    // {
+    //   name: "Projects",
+    //   href: "#",
+    //   icon: FolderIcon,
+    //   current: currentPage === "Projects",
+    // },
+    // {
+    //   name: "Calendar",
+    //   href: "/calendar",
+    //   icon: CalendarIcon,
+    //   current: currentPage === "Calendar",
+    // },
+    // {
+    //   name: "Documents",
+    //   href: "#",
+    //   icon: DocumentDuplicateIcon,
+    //   current: currentPage === "Documents",
+    // },
+    {
+      name: "Reports",
+      href: "#",
+      icon: ChartPieIcon,
+      current: currentPage === "Reports",
+    },
+  ];
+
+  const mySosmed = [
+    {
+      name: "Instagram",
+      href: "https://www.instagram.com/_ha_nif/",
+      icon: FaSquareInstagram,
+      current: false,
+    },
+    {
+      name: "Github",
+      href: "https://github.com/jamaludinhanif",
+      icon: FaGithub,
+      current: false,
+    },
+    {
+      name: "Whatsapp",
+      href: "https://wa.me/6285161310017?text=halo%20bang%20kasep",
+      icon: FaWhatsapp,
+      current: false,
+    },
+  ];
+  const userNavigation = [
+    { name: "Your profile", href: "/profile" },
+    // { name: "Logout", href: `${API.Main_URL}/auth/logout?userId=${userData?.id}` },
+  ];
+
+  const handleNavigation = (page) => {
+    setCurrentPage(page);
+    sessionStorage.setItem("@currentPage", page);
+  };
+
+  const fakeLoading = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+  };
+
+  const getMycart = async () => {
+    setIsLoading(true);
+    await axios
+      .post(
+        `${API.Ngrok_URL}/product/my-cart?userId=${userData?.id}`,
+        {},
+        {
+          headers: {
+            "bypass-tunnel-reminder": "true",
+          },
+        }
+      )
+      .then((response) => {
+        const itemsByCode = Object.entries(response.data.data).map(
+          ([index, items]) => ({
+            index,
+            items,
+          })
+        );
+        setJumlahCart(itemsByCode?.length)
+        // console.warn("ini response data myCart", JumlahCart);
+      })
+      .catch((err) => {
+        console.error("Check Member Error: ", err);
+        return false;
+      });
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    const storedPage = sessionStorage.getItem("@currentPage");
+    getMycart()
+    if (storedPage) {
+      setCurrentPage(storedPage);
+    }
+  }, []);
 
   return (
     <>
-      {/*
-        This example requires updating your template:
-
-        ```
-        <html class="h-full bg-white">
-        <body class="h-full">
-        ```
-      */}
+      {IsLoading == true ? (
+        <>
+          <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-80 z-50">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
+          </div>
+        </>
+      ) : (
+        <></>
+      )}
       <div>
-        <Dialog open={sidebarOpen} onClose={setSidebarOpen} className="relative z-50 lg:hidden">
+        {/* sidebar */}
+        <Dialog
+          open={sidebarOpen}
+          onClose={setSidebarOpen}
+          className="relative z-50 lg:hidden"
+        >
           <DialogBackdrop
             transition
             className="fixed inset-0 bg-gray-900/80 transition-opacity duration-300 ease-linear data-[closed]:opacity-0"
@@ -88,9 +210,16 @@ export default function MainLayout({ children }) {
             >
               <TransitionChild>
                 <div className="absolute left-full top-0 flex w-16 justify-center pt-5 duration-300 ease-in-out data-[closed]:opacity-0">
-                  <button type="button" onClick={() => setSidebarOpen(false)} className="-m-2.5 p-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setSidebarOpen(false)}
+                    className="-m-2.5 p-2.5"
+                  >
                     <span className="sr-only">Close sidebar</span>
-                    <XMarkIcon aria-hidden="true" className="h-6 w-6 text-white" />
+                    <XMarkIcon
+                      aria-hidden="true"
+                      className="h-6 w-6 text-white"
+                    />
                   </button>
                 </div>
               </TransitionChild>
@@ -99,7 +228,7 @@ export default function MainLayout({ children }) {
                 <div className="flex h-16 shrink-0 items-center">
                   <img
                     alt="Your Company"
-                    src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
+                    src="https://i.pinimg.com/236x/88/ef/45/88ef4583aa9e81b18d6baa9ebf3e5486.jpg"
                     className="h-8 w-auto"
                   />
                 </div>
@@ -109,53 +238,96 @@ export default function MainLayout({ children }) {
                       <ul role="list" className="-mx-2 space-y-1">
                         {navigation.map((item) => (
                           <li key={item.name}>
-                            <a
-                              href={item.href}
+                            <Link
+                              to={item.href}
+                              onClick={() => {
+                                handleNavigation(item.name);
+                                fakeLoading();
+                              }}
                               className={classNames(
                                 item.current
-                                  ? 'bg-gray-50 text-indigo-600'
-                                  : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600',
-                                'group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6',
+                                  ? "bg-gray-50 text-indigo-600"
+                                  : "text-gray-700 hover:bg-gray-50 hover:text-indigo-600",
+                                "group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6"
                               )}
                             >
                               <item.icon
                                 aria-hidden="true"
                                 className={classNames(
-                                  item.current ? 'text-indigo-600' : 'text-gray-400 group-hover:text-indigo-600',
-                                  'h-6 w-6 shrink-0',
+                                  item.current
+                                    ? "text-indigo-600"
+                                    : "text-gray-400 group-hover:text-indigo-600",
+                                  "h-6 w-6 shrink-0"
                                 )}
                               />
                               {item.name}
-                            </a>
+                              {item.name === "Keranjang" && <Badge count={JumlahCart} showZero={true} />}
+                            </Link>
                           </li>
                         ))}
                       </ul>
                     </li>
                     <li>
-                      <div className="text-xs font-semibold leading-6 text-gray-400">Your teams</div>
-                      <ul role="list" className="-mx-2 mt-2 space-y-1">
-                        {teams.map((team) => (
-                          <li key={team.name}>
-                            <a
-                              href={team.href}
+                      <div className="text-xs font-semibold leading-6 text-gray-400">
+                        Cashier Or Admin
+                      </div>
+                      <ul role="list" className="-mx-2 space-y-1">
+                        {cashier.map((item) => (
+                          <li key={item.name}>
+                            <Link
+                              to={item.href}
+                              onClick={() => {
+                                handleNavigation(item.name);
+                                fakeLoading();
+                              }}
                               className={classNames(
-                                team.current
-                                  ? 'bg-gray-50 text-indigo-600'
-                                  : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600',
-                                'group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6',
+                                item.current
+                                  ? "bg-gray-50 text-indigo-600"
+                                  : "text-gray-700 hover:bg-gray-50 hover:text-indigo-600",
+                                "group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6"
                               )}
                             >
-                              <span
+                              <item.icon
+                                aria-hidden="true"
                                 className={classNames(
-                                  team.current
-                                    ? 'border-indigo-600 text-indigo-600'
-                                    : 'border-gray-200 text-gray-400 group-hover:border-indigo-600 group-hover:text-indigo-600',
-                                  'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border bg-white text-[0.625rem] font-medium',
+                                  item.current
+                                    ? "text-indigo-600"
+                                    : "text-gray-400 group-hover:text-indigo-600",
+                                  "h-6 w-6 shrink-0"
                                 )}
-                              >
-                                {team.initial}
-                              </span>
-                              <span className="truncate">{team.name}</span>
+                              />
+                              {item.name}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </li>
+                    <li>
+                      <div className="text-xs font-semibold leading-6 text-gray-400">
+                        Check my sosmed
+                      </div>
+                      <ul role="list" className="-mx-2 space-y-1">
+                        {mySosmed.map((item) => (
+                          <li key={item.name}>
+                            <a
+                              href={item.href}
+                              className={classNames(
+                                item.current
+                                  ? "bg-gray-50 text-indigo-600"
+                                  : "text-gray-700 hover:bg-gray-50 hover:text-indigo-600",
+                                "group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6"
+                              )}
+                            >
+                              <item.icon
+                                aria-hidden="true"
+                                className={classNames(
+                                  item.current
+                                    ? "text-indigo-600"
+                                    : "text-gray-400 group-hover:text-indigo-600",
+                                  "h-6 w-6 shrink-0"
+                                )}
+                              />
+                              {item.name}
                             </a>
                           </li>
                         ))}
@@ -166,11 +338,11 @@ export default function MainLayout({ children }) {
                         href="#"
                         className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
                       >
-                        <Cog6ToothIcon
+                        <MdLogout
                           aria-hidden="true"
                           className="h-6 w-6 shrink-0 text-gray-400 group-hover:text-indigo-600"
                         />
-                        Settings
+                        <Logout UsersId={userData?.id} />
                       </a>
                     </li>
                   </ul>
@@ -197,60 +369,60 @@ export default function MainLayout({ children }) {
                   <ul role="list" className="-mx-2 space-y-1">
                     {navigation.map((item) => (
                       <li key={item.name}>
-                        <a
-                          href={item.href}
+                        <Link
+                          to={item.href}
                           className={classNames(
                             item.current
-                              ? 'bg-gray-50 text-indigo-600'
-                              : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600',
-                            'group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6',
+                              ? "bg-gray-50 text-indigo-600"
+                              : "text-gray-700 hover:bg-gray-50 hover:text-indigo-600",
+                            "group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6"
                           )}
                         >
                           <item.icon
                             aria-hidden="true"
                             className={classNames(
-                              item.current ? 'text-indigo-600' : 'text-gray-400 group-hover:text-indigo-600',
-                              'h-6 w-6 shrink-0',
+                              item.current
+                                ? "text-indigo-600"
+                                : "text-gray-400 group-hover:text-indigo-600",
+                              "h-6 w-6 shrink-0"
                             )}
                           />
                           {item.name}
-                        </a>
+                        </Link>
                       </li>
                     ))}
                   </ul>
                 </li>
                 <li>
-                  <div className="text-xs font-semibold leading-6 text-gray-400">Your teams</div>
-                  <ul role="list" className="-mx-2 mt-2 space-y-1">
-                    {teams.map((team) => (
-                      <li key={team.name}>
-                        <a
-                          href={team.href}
+                  <ul role="list" className="-mx-2 space-y-1">
+                    {cashier.map((item) => (
+                      <li key={item.name}>
+                        <Link
+                          href={item.href}
                           className={classNames(
-                            team.current
-                              ? 'bg-gray-50 text-indigo-600'
-                              : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600',
-                            'group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6',
+                            item.current
+                              ? "bg-gray-50 text-indigo-600"
+                              : "text-gray-700 hover:bg-gray-50 hover:text-indigo-600",
+                            "group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6"
                           )}
                         >
-                          <span
+                          <item.icon
+                            aria-hidden="true"
                             className={classNames(
-                              team.current
-                                ? 'border-indigo-600 text-indigo-600'
-                                : 'border-gray-200 text-gray-400 group-hover:border-indigo-600 group-hover:text-indigo-600',
-                              'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border bg-white text-[0.625rem] font-medium',
+                              item.current
+                                ? "text-indigo-600"
+                                : "text-gray-400 group-hover:text-indigo-600",
+                              "h-6 w-6 shrink-0"
                             )}
-                          >
-                            {team.initial}
-                          </span>
-                          <span className="truncate">{team.name}</span>
-                        </a>
+                          />
+                          {item.name}
+                        </Link>
                       </li>
                     ))}
                   </ul>
                 </li>
                 <li className="mt-auto">
-                  <a
+                  <Link
                     href="#"
                     className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
                   >
@@ -259,13 +431,14 @@ export default function MainLayout({ children }) {
                       className="h-6 w-6 shrink-0 text-gray-400 group-hover:text-indigo-600"
                     />
                     Settings
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </nav>
           </div>
         </div>
 
+        {/* Navbar */}
         <div className="lg:pl-72">
           <div className="sticky top-0 z-40 lg:mx-auto lg:max-w-7xl lg:px-8">
             <div className="flex h-16 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-0 lg:shadow-none">
@@ -279,7 +452,10 @@ export default function MainLayout({ children }) {
               </button>
 
               {/* Separator */}
-              <div aria-hidden="true" className="h-6 w-px bg-gray-200 lg:hidden" />
+              <div
+                aria-hidden="true"
+                className="h-6 w-px bg-gray-200 lg:hidden"
+              />
 
               <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
                 <form action="#" method="GET" className="relative flex flex-1">
@@ -299,13 +475,19 @@ export default function MainLayout({ children }) {
                   />
                 </form>
                 <div className="flex items-center gap-x-4 lg:gap-x-6">
-                  <button type="button" className="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500">
+                  <button
+                    type="button"
+                    className="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500"
+                  >
                     <span className="sr-only">View notifications</span>
                     <BellIcon aria-hidden="true" className="h-6 w-6" />
                   </button>
 
                   {/* Separator */}
-                  <div aria-hidden="true" className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200" />
+                  <div
+                    aria-hidden="true"
+                    className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200"
+                  />
 
                   {/* Profile dropdown */}
                   <Menu as="div" className="relative">
@@ -313,14 +495,20 @@ export default function MainLayout({ children }) {
                       <span className="sr-only">Open user menu</span>
                       <img
                         alt=""
-                        src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                        src="https://i.pinimg.com/236x/88/ef/45/88ef4583aa9e81b18d6baa9ebf3e5486.jpg"
                         className="h-8 w-8 rounded-full bg-gray-50"
                       />
                       <span className="hidden lg:flex lg:items-center">
-                        <span aria-hidden="true" className="ml-4 text-sm font-semibold leading-6 text-gray-900">
-                          Tom Cook
+                        <span
+                          aria-hidden="true"
+                          className="ml-4 text-sm font-semibold leading-6 text-gray-900"
+                        >
+                          {userData?.username}
                         </span>
-                        <ChevronDownIcon aria-hidden="true" className="ml-2 h-5 w-5 text-gray-400" />
+                        <ChevronDownIcon
+                          aria-hidden="true"
+                          className="ml-2 h-5 w-5 text-gray-400"
+                        />
                       </span>
                     </MenuButton>
                     <MenuItems
@@ -329,14 +517,21 @@ export default function MainLayout({ children }) {
                     >
                       {userNavigation.map((item) => (
                         <MenuItem key={item.name}>
-                          <a
-                            href={item.href}
+                          <Link
+                            to={item.href}
+                            onClick={() => {
+                              handleNavigation(item.name);
+                              fakeLoading();
+                            }}
                             className="block px-3 py-1 text-sm leading-6 text-gray-900 data-[focus]:bg-gray-50"
                           >
                             {item.name}
-                          </a>
+                          </Link>
                         </MenuItem>
                       ))}
+                      <p className="block px-3 py-1 text-sm leading-6 text-gray-900 data-[focus]:bg-gray-50">
+                        <Logout UsersId={userData?.id} />
+                      </p>
                     </MenuItems>
                   </Menu>
                 </div>
@@ -345,12 +540,10 @@ export default function MainLayout({ children }) {
           </div>
 
           <main className="">
-            <div className="mx-auto max-w-7xl">
-                {children}
-            </div>
+            <div className="mx-auto max-w-7xl">{children}</div>
           </main>
         </div>
       </div>
     </>
-  )
+  );
 }
