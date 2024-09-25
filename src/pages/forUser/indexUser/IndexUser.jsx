@@ -84,7 +84,7 @@ const IndexUser = () => {
     setIsLoading(true);
     await axios
       .post(
-        `${API.BASE_URL}/product/all-product`,
+        `${API.Ngrok_URL}/product/all-product`,
         {},
         {
           headers: {
