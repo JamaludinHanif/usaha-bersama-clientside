@@ -4,8 +4,8 @@ import axios from "axios";
 import { message, Modal, Empty } from "antd";
 import { useNavigate, useLocation } from "react-router-dom";
 import { API } from "../../../config/api";
-import { HiOutlineSquare2Stack, HiEye } from "react-icons/hi2";
 import { HiOutlineX } from "react-icons/hi";
+import { HiOutlineSquare2Stack, HiEye } from "react-icons/hi2";
 import CopyToClipboard from "react-copy-to-clipboard";
 import { ShoppingCartOutlined, LoadingOutlined } from "@ant-design/icons";
 
@@ -87,10 +87,19 @@ const Cart = () => {
     }, 1000);
   };
 
+  const calculateTotal = () => {
+    return Selected?.products.reduce((acc, item) => acc + item.total_amount, 0);
+  };
+  
+
   console.log('ini item terpilih', Selected)
+  console.log('ini kalkulate', calculateTotal())
 
   useEffect(() => {
     getMycart();
+  }, []);
+
+  useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
 
@@ -106,15 +115,14 @@ const Cart = () => {
         <></>
       )}
       <div className="min-h-screen bg-gray-100 p-3 lg:p-4 pt-12 lg:px-5">
-        <p className="" onClick={() => getMycart()}>
-          Ini Keranjang Kamu
+        <p className="text-lg font-semibold mb-10" onClick={() => getMycart()}>
+          Kode Keranjang Kamu :
         </p>
         {Data.map((cart, index) => (
           <>
-            <div className="bg-white py-3 px-6 rounded-lg shadow-md mt-5">
+            <div className="bg-white py-3 px-6 rounded-lg border shadow-sm mt-5">
               <div className="flex flex-row justify-between mt-3">
                 <div className="">
-                  <p className="text-sm">Code :</p>
                   <p className="lg:text-xl text-lg font-bold">
                     {cart?.items?.code}
                   </p>
@@ -233,7 +241,7 @@ const Cart = () => {
 
               <div className="text-right text-sm font-semibold mt-10">
                 <p>Total</p>
-                {/* <p className="">Rp. {totalAmount.toLocaleString("id-ID")}</p> */}
+                <p className="">Rp. {calculateTotal().toLocaleString("id-ID")}</p>
               </div>
             </>
           )}

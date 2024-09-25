@@ -4,7 +4,7 @@ import axios from "axios";
 import { API } from "../../../config/api";
 import { useNavigate, useLocation } from "react-router-dom";
 import { HiOutlineX } from "react-icons/hi";
-import { FaSearch } from "react-icons/fa";
+import { FaSearch, FaCartPlus } from "react-icons/fa";
 import { BsArrowRight, BsFillNodeMinusFill, BsSearch } from "react-icons/bs";
 import {
   ChevronDownIcon,
@@ -21,6 +21,8 @@ import {
   message,
 } from "antd";
 import { ShoppingCartOutlined, LoadingOutlined } from "@ant-design/icons";
+import { HiOutlineSquare2Stack, HiEye } from "react-icons/hi2";
+import CopyToClipboard from "react-copy-to-clipboard";
 
 const antIcon = (
   <LoadingOutlined
@@ -36,6 +38,7 @@ const IndexUser = () => {
   // Modal Ant Desain
   const [open, setOpen] = useState(false);
   const [Open2, setOpen2] = useState(false);
+  const [Open3, setOpen3] = useState(false);
   const showModal = () => {
     setOpen(true);
   };
@@ -75,12 +78,13 @@ const IndexUser = () => {
   const [IsLoading, setIsLoading] = useState(false);
   const [Loading, setLoading] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
+  const [Code, setCode] = useState();
 
   const getAllProduct = async () => {
     setIsLoading(true);
     await axios
       .post(
-        `${API.Ngrok_URL}/product/all-product`,
+        `${API.BASE_URL}/product/all-product`,
         {},
         {
           headers: {
@@ -148,6 +152,11 @@ const IndexUser = () => {
       })
       .then((response) => {
         console.log("ini response data all", response?.data?.data);
+        if (response?.data?.status == true) {
+          setOpen2(false);
+          setOpen3(true);
+          setCode(response?.data?.data);
+        }
       })
       .catch((err) => {
         console.error("Check Member Error: ", err);
@@ -482,27 +491,109 @@ const IndexUser = () => {
         footer={[]}
         width={400}
       >
-        <p className="">
-          <span className="ml-1 font-semibold">{Selected?.name}</span>
-        </p>
+        <div className="flex my-7">
+          <div className="w-1/2">
+            <img
+              src={Selected?.image}
+              className="h-28 w-28 object-cover p-1 border rounded-lg"
+              alt=""
+            />
+          </div>
+          <div className="w-1/2">
+            <p className="font-semibold mb-1">{Selected?.name}</p>
+            <p className="font-semibold mb-1">
+              {Selected?.stock > 0 ? (
+                <span className="text-blue-600">Stok {Selected?.stock}</span>
+              ) : (
+                <span className="text-red-600">Stok Habis</span>
+              )}
+            </p>
+            <div className="flex justify-between">
+              {Selected?.category === "makanan" ? (
+                <>
+                  <div className="bg-teal-300 w-8/12 rounded-tr-xl my-1">
+                    <p className="text-white text-xs text-center">Makanan</p>
+                  </div>
+                  <div
+                    className={`${
+                      Selected?.unit === "pcs"
+                        ? "bg-red-300"
+                        : Selected?.unit === "dos"
+                        ? "bg-blue-300"
+                        : Selected?.unit === "pak"
+                        ? "bg-green-300"
+                        : "bg-red-300"
+                    } w-3/12 rounded-tl-xl my-1`}
+                  >
+                    <p className="text-white text-xs text-center">
+                      {Selected?.unit}
+                    </p>
+                  </div>
+                </>
+              ) : Selected?.category === "minuman" ? (
+                <>
+                  <div className="bg-yellow-300 w-8/12 rounded-tr-xl my-1">
+                    <p className="text-white text-xs text-center">Minuman</p>
+                  </div>
+                  <div
+                    className={`${
+                      Selected?.unit === "pcs"
+                        ? "bg-red-300"
+                        : Selected?.unit === "dos"
+                        ? "bg-blue-300"
+                        : Selected?.unit === "pak"
+                        ? "bg-green-300"
+                        : "bg-red-300"
+                    } w-3/12 rounded-tl-xl my-1`}
+                  >
+                    <p className="text-white text-xs text-center">
+                      {Selected?.unit}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="bg-pink-400 w-8/12 rounded-tr-xl my-1">
+                    <p className="text-white text-xs text-center">Pembersih</p>
+                  </div>
+                  <div
+                    className={`${
+                      Selected?.unit === "pcs"
+                        ? "bg-red-300"
+                        : Selected?.unit === "dos"
+                        ? "bg-blue-300"
+                        : Selected?.unit === "pak"
+                        ? "bg-green-300"
+                        : "bg-red-300"
+                    } w-3/12 rounded-tl-xl my-1`}
+                  >
+                    <p className="text-white text-xs text-center">
+                      {Selected?.unit}
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+            <p className="font-bold mb-1 mt-1 text-base">
+              Rp. {Selected?.price.toLocaleString("id-ID")}
+            </p>
+          </div>
+        </div>
         <div
-          className="mt-5 py-2 border-b items-center"
+          className="mt-10 items-center"
           onClick={() => {
             setOpen(!open);
           }}
         >
-          <div className="flex flex-row justify-around">
-            <div
-              onClick={() => handleCancel()}
-              className="bg-white border border-primary w-1/3 text-primary font-semibold rounded-lg py-2 text-center cursor-pointer hover:opacity-75"
-            >
-              Tidak
-            </div>
+          <div className="flex flex-row justify-center">
             <div
               onClick={() => handleSelectChange(Selected, SelectedIndex)}
-              className="bg-blue-600 w-1/3 text-white font-semibold rounded-lg py-2 text-center cursor-pointer hover:opacity-75"
+              className="bg-blue-600 w-1/2 text-white font-semibold rounded-lg py-2 text-center cursor-pointer hover:opacity-75"
             >
-             Tambahkan
+              <div className="flex justify-center items-center">
+                <FaCartPlus size={15} />
+                <p className="ml-2">Tambah</p>
+              </div>
             </div>
           </div>
         </div>
@@ -520,7 +611,9 @@ const IndexUser = () => {
           {Items[0]?.value == null ? (
             <>
               <div className="my-6">
-                <Empty description={<p>Silahkan Pilih barang terlebih dahulu</p>} />
+                <Empty
+                  description={<p>Silahkan Pilih barang terlebih dahulu</p>}
+                />
               </div>
             </>
           ) : (
@@ -604,6 +697,46 @@ const IndexUser = () => {
                   <Spin indicator={antIcon} className="ml-5 mb-1" />
                 </>
               ) : null}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={Open3}
+        title={`Kode Keranjang Kamu :`}
+        // onOk={() => setOpen2(false)}
+        onCancel={() => setOpen3(false)}
+        footer={[]}
+        width={400}
+      >
+        <div className="my-7 text-xs flex justify-center">
+          <p className="font-semibold text-xl mr-5">{Code}</p>
+          <CopyToClipboard text={Code}>
+            <div
+              className="flex flex-row items-center font-semibold text-blue-600 cursor-pointer"
+              onClick={() => {
+                message.info("Text berhasil di Copy");
+              }}
+            >
+              <p className="text-sm">Salin</p>
+              <i className="ml-1">
+                <HiOutlineSquare2Stack />
+              </i>
+            </div>
+          </CopyToClipboard>
+        </div>
+        <p className="mt-10 text-xs px-4">
+          note : *kmu juga bisa menggunakan kode ini berkali-kali, lihat kode
+          keranjang yang tersimpan, dihalaman <span className="text-blue-600">Keranjang</span>
+        </p>
+        <div className="items-center mt-8">
+          <div className="flex flex-row justify-around">
+            <button
+              onClick={() => setOpen3(false)}
+              className="bg-blue-600 w-3/4 disabled:bg-gray-400 text-white font-semibold rounded-lg py-2 px-6 text-center cursor-pointer hover:opacity-75"
+            >
+              Oke
             </button>
           </div>
         </div>

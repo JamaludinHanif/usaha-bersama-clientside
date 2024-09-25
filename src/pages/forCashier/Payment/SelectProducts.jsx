@@ -30,6 +30,8 @@ const SelectProducts = () => {
   // navigate
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const location = useLocation();
+  const dataLocation = location?.state?.data;
 
   // session storage manage
   const sessionUserData = sessionStorage.getItem("@userData");
@@ -42,7 +44,26 @@ const SelectProducts = () => {
   const [Data, setData] = useState([]);
   const [IsLoading, setIsLoading] = useState(false);
   const [Loading, setLoading] = useState(false);
+  const [LoadingSelect, setLoadingSelect] = useState(false);
   const [TotalAmount, setTotalAmount] = useState(0);
+
+  const reedem_data = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+    if (dataLocation && dataLocation.length > 0) {
+      const newItems = dataLocation.map((data, index) => ({
+        id: items.length + index + 1,
+        value: data,
+        quantity: data.quantity,
+        price: data.product.price,
+        totalPrice: data.product.price * data.quantity,
+      }));
+      setItems(newItems);
+    }
+  };
+  console.log("ini location", location);
 
   const options = [
     {
@@ -68,12 +89,17 @@ const SelectProducts = () => {
   const getAllProduct = async () => {
     setIsLoading(true);
     await axios
-      .post(`${API.Ngrok_URL}/product/all-product`, {}, {
-        headers: {
-          "bypass-tunnel-reminder": "true",
-        },
-      })
+      .post(
+        `${API.Ngrok_URL}/product/all-product`,
+        {},
+        {
+          headers: {
+            "bypass-tunnel-reminder": "true",
+          },
+        }
+      )
       .then((response) => {
+        setIsLoading(true);
         setData(response?.data?.data);
         // console.log("ini response user all", response?.data?.data);
       })
@@ -136,7 +162,6 @@ const SelectProducts = () => {
   };
 
   const calculateTotal = () => {
-    // setTotalAmount(items.reduce((acc, item) => acc + item.price * item.quantity, 0))
     return items.reduce((acc, item) => acc + item.price * item.quantity, 0);
   };
 
@@ -225,12 +250,32 @@ const SelectProducts = () => {
   };
 
   useEffect(() => {
+    reedem_data();
+  }, [dataLocation]);
+
+  useEffect(() => {
     getAllProduct();
+    setLoadingSelect(true)
+    setTimeout(() => {
+        setLoadingSelect(false)
+    }, 5000);
+  }, []);
+
+  useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
 
   return (
     <>
+      {/* {IsLoading == true ? (
+        <>
+          <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-80 z-50">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
+          </div>
+        </>
+      ) : (
+        <></>
+      )} */}
       <div className="min-h-screen bg-gray-100 p-3 lg:p-4 pt-12 lg:px-5">
         <div className="lg:flex text-xs lg:text-base">
           <div className="lg:w-5/12 max-w-lg mx-auto h-2/4 bg-white shadow-md rounded-lg p-3 lg:p-6">
@@ -246,6 +291,8 @@ const SelectProducts = () => {
                   <Select
                     options={Data}
                     value={item.value}
+                    isLoading={LoadingSelect}
+                    loadingMessage={() => "Loading options..."}
                     onChange={(option) => handleSelectChange(option, index)}
                     placeholder={`Pilih Barang ${index + 1}`}
                     className="text-sm w-full"
@@ -318,7 +365,7 @@ const SelectProducts = () => {
               </div>
               <div className="flex justify-between mt-4 font-semibold">
                 <span>Total Keseluruhan:</span>
-                <span>Rp {calculateTotal().toLocaleString("id-ID")}</span>
+                <span>Rp. {calculateTotal().toLocaleString("id-ID")}</span>
               </div>
             </div>
 
