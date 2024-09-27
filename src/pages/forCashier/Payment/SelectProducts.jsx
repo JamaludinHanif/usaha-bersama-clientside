@@ -302,7 +302,6 @@ const SelectProducts = () => {
                 <input
                   type="number"
                   min="1"
-                  max="5"
                   value={item.quantity}
                   onChange={(e) => handleQuantityChange(e, index)}
                   onBlur={() => handleBlur(index)}

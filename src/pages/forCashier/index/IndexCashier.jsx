@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import BukanAdmin from "../../../components/BukanAdmin";
-import { Modal, Spin } from "antd";
+import { Modal, Spin, message } from "antd";
 import { ShoppingCartOutlined, LoadingOutlined } from "@ant-design/icons";
 import { API } from "../../../config/api";
 
@@ -59,13 +59,17 @@ const IndexCashier = () => {
       )
       .then((response) => {
         // setData(response?.data?.data);
-        navigate(`/pilih-barang`, {
-          state: {
-            data: response?.data?.data,
-            // totalPrice: calculateTotal(),
-          },
-        });
-        message.success("Reedem Code Berhasil");
+        if (response?.data?.status == true) {
+          navigate(`/pilih-barang`, {
+            state: {
+              data: response?.data?.data,
+              // totalPrice: calculateTotal(),
+            },
+          });
+          message.success("Reedem Code Berhasil");
+        } else {
+          message.warning(response?.data?.message)
+        }
         console.log("ini response data all by code", response?.data?.data);
       })
       .catch((err) => {
@@ -74,6 +78,14 @@ const IndexCashier = () => {
       });
     setLoading(false);
   };
+
+  const validasi = () => {
+    if (Code == undefined || Code == '') {
+      message.warning('Code tidak boleh kosong')
+    } else {
+      getDataByCode()
+    }
+  }
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -137,7 +149,7 @@ const IndexCashier = () => {
           <div className="flex flex-row justify-center">
             <button
               onClick={() => {
-                getDataByCode()
+                validasi()
               }}
               className="bg-blue-600 w-3/4 disabled:bg-gray-400 text-white font-semibold rounded-lg py-2 px-6 text-center cursor-pointer hover:opacity-75"
             >

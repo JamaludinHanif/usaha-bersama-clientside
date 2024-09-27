@@ -17,6 +17,9 @@ import IndexCashier from "./pages/forCashier/index/IndexCashier";
 import SelectProducts from "./pages/forCashier/Payment/SelectProducts";
 import Precheckout from "./pages/forCashier/Payment/Precheckout";
 import Cart from "./pages/forUser/Cart/Cart";
+import Register from "./pages/authentication/Register";
+import ForgotPassword from "./pages/authentication/ForgotPassword";
+import ResetPassword from "./pages/authentication/ResetPassword";
 
 const protectedRoutes = [
   { path: "/dashboard", element: <Dashboard /> },
@@ -35,6 +38,9 @@ function App() {
       <Routes>
         {/* Route untuk login */}
         <Route path="/" element={<Login />} />
+        <Route path="/registrasi" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
 
         {/* Protected routes */}
         {protectedRoutes.map((route, index) => (

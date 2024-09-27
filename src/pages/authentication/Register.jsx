@@ -1,12 +1,21 @@
 import React from "react";
 import loginImg from "../../../public/logImg.png";
 import instagramLogo from "../../../public/2227.jpg";
-import { useState } from "react";
-import { Button, Checkbox, Form, Input, Spin, message } from "antd";
+import { useState, useEffect } from "react";
+import {
+  Button,
+  Checkbox,
+  Form,
+  Input,
+  Spin,
+  message,
+  notification,
+} from "antd";
 import { useNavigate, Link } from "react-router-dom";
 import { API } from "../../config/api";
 import axios from "axios";
 import { LoadingOutlined } from "@ant-design/icons";
+import { AiFillPicture } from "react-icons/ai";
 
 const antIcon = (
   <LoadingOutlined
@@ -18,15 +27,9 @@ const antIcon = (
   />
 );
 
-const onFinish = (values) => {
-  // console.log("Success:", values);
-};
-const onFinishFailed = (errorInfo) => {
-  // console.log("Failed:", errorInfo);
-};
-
-const Login = () => {
+const Register = () => {
   // antd
+  const [api, contextHolder2] = notification.useNotification();
   const [messageApi, contextHolder] = message.useMessage();
 
   // router
@@ -35,34 +38,54 @@ const Login = () => {
   //state
   const [Username, setUsername] = useState();
   const [Password, setPassword] = useState();
+  const [Name, setName] = useState();
+  const [Email, setEmail] = useState();
   const [Loading, setLoading] = useState(false);
+  const [responseStatus, setResponseStatus] = useState(null);
 
-  const login = async () => {
+  const register = async () => {
     let body = {
+      name: Name,
       username: Username,
+      email: Email,
+      role: "user",
       password: `${Password}`,
     };
     console.log("ini body", body);
     setLoading(true);
     await axios
-      .post(`${API.Ngrok_URL}/auth/login`, body, {
+      .post(`${API.Ngrok_URL}/auth/register`, body, {
         headers: {
           "bypass-tunnel-reminder": "true",
         },
       })
       .then((response) => {
         if (response?.data?.status == true) {
-          navigate(`/home`);
-          sessionStorage.setItem(
-            "@userData",
-            JSON.stringify(response?.data?.data)
-          );
-          sessionStorage.setItem("@isLoggedIn", "true");
-          messageApi.success("login berhasil");
+          navigate(`/`);
+          api.open({
+            message: "Buat akun berhasil",
+            description: "Silahkan Login",
+            duration: 4,
+            type: "success",
+            showProgress: true,
+          });
+          message.success("Buat akun berhasil")
+          message.success("Silahkan Login")
           console.log(response?.data);
+        } else if (response?.data?.status == false) {
+          const errorMessages = Object.values(response.data.message)
+            .map((errArr) => errArr.join(", "))
+            .join(" & ");
+
+          api.open({
+            message: "Buat akun gagal",
+            description: errorMessages,
+            duration: 7,
+            type: "error",
+            showProgress: true,
+          });
+          console.log("ini false", errorMessages);
         } else {
-          messageApi.error("login gagal");
-          messageApi.error(response?.data?.errors);
           console.log(response?.data);
         }
       })
@@ -75,6 +98,7 @@ const Login = () => {
 
   return (
     <>
+      {contextHolder2}
       <body class="lg:h-screen">
         <div class="flex min-h-full">
           <div class="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
@@ -85,29 +109,51 @@ const Login = () => {
                   src="./src/img/dudul.jpg"
                   alt="Udin Company"
                 />
-                <h2 class="mt-8 text-2xl font-bold leading-9 tracking-tight text-gray-900">
-                  Log in ke akun mu
+                <h2
+                  class="mt-8 text-2xl font-bold leading-9 tracking-tight text-gray-900"
+                >
+                  Daftar untuk membuat akun
                 </h2>
                 <p class="mt-2 text-sm leading-6 text-gray-500">
-                  Belum punya akun ? 
+                  Sudah punya akun ?
                   <span
                     // href="https://wa.me/6285161310017?text=daftarin%20saya%20dong%20minn%20"
-                    onClick={() => navigate('/registrasi')}
+                    onClick={() => navigate(`/`)}
                     class="font-semibold text-indigo-600 ml-1 hover:text-indigo-500"
                   >
-                    Daftar sekarang
+                    Login sekarang
                   </span>
                 </p>
               </div>
 
               <div class="mt-10">
                 <div>
-                  <Form
-                    onFinish={onFinish}
-                    onFinishFailed={onFinishFailed}
-                    autoComplete="off"
-                    onSubmitCapture={() => login()}
-                  >
+                  <Form autoComplete="off" onSubmitCapture={() => register()}>
+                    <div className="mb-1 lg:mb-2">
+                      <label htmlFor="Nama" className="font-bold pb-5">
+                        Name :
+                      </label>
+                    </div>
+                    <Form.Item
+                      name="Nama"
+                      id="Nama"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Nama Harus Di isi!",
+                        },
+                      ]}
+                    >
+                      <input
+                        placeholder="Masukan Nama kamu"
+                        type="text"
+                        autoComplete="off"
+                        value={Name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="w-full text-sm rounded-lg outline-none shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 placeholder:text-xs disabled:bg-gray-200 focus:ring-2 focus:ring-inset focus:ring-blue-600 px-2 py-2.5"
+                      />
+                    </Form.Item>
+
                     <div className="mb-1 lg:mb-2">
                       <label htmlFor="username" className="font-bold pb-5">
                         Username :
@@ -129,6 +175,31 @@ const Login = () => {
                         autoComplete="off"
                         value={Username}
                         onChange={(e) => setUsername(e.target.value)}
+                        className="w-full text-sm rounded-lg outline-none shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 placeholder:text-xs disabled:bg-gray-200 focus:ring-2 focus:ring-inset focus:ring-blue-600 px-2 py-2.5"
+                      />
+                    </Form.Item>
+
+                    <div className="mb-1 lg:mb-2">
+                      <label htmlFor="Email" className="font-bold pb-5">
+                        Email :
+                      </label>
+                    </div>
+                    <Form.Item
+                      name="Email"
+                      id="Email"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Email Harus Di isi!",
+                        },
+                      ]}
+                    >
+                      <input
+                        placeholder="Masukan Email kamu"
+                        type="email"
+                        autoComplete="off"
+                        value={Email}
+                        onChange={(e) => setEmail(e.target.value)}
                         className="w-full text-sm rounded-lg outline-none shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 placeholder:text-xs disabled:bg-gray-200 focus:ring-2 focus:ring-inset focus:ring-blue-600 px-2 py-2.5"
                       />
                     </Form.Item>
@@ -156,11 +227,6 @@ const Login = () => {
                       />
                     </Form.Item>
                     <div className="mb-3 mt-8">
-                      <Link to={"/forgot-password"}>
-                        <p className="text-xs text-blue-400 cursor-pointer">
-                          Lupa Password ?
-                        </p>
-                      </Link>
                     </div>
                     <Button
                       type="primary"
@@ -168,7 +234,7 @@ const Login = () => {
                       // onClick={() => login()}
                       className="w-full bg-primary py-2"
                     >
-                      Login
+                      Daftar
                       {Loading ? (
                         <>
                           <Spin indicator={antIcon} className="ml-5 mb-1" />
@@ -242,4 +308,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;

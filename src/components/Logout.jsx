@@ -46,7 +46,12 @@ const Logout = ({ UsersId }) => {
           navigate("/");
         } else {
           console.log(response);
+          message.error("logout gagal");
         }
+      })
+      .catch((err) => {
+        message.error("logout gagal");
+        console.error("Terjadi Kesalahan: ", err);
       });
       setLoading(false)
   };
